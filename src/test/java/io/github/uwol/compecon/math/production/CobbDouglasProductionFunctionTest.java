@@ -101,7 +101,7 @@ public class CobbDouglasProductionFunctionTest extends CompEconTestSupport {
 
 	@Test
 	public void testCalculateProductionOutputWithMarketPrices() {
-		final Currency currency = Currency.EURO;
+		final Currency currency = Currency.ARITHMODYNAMIC;
 
 		final Household household1_EUR = ApplicationContext.getInstance().getAgentService().findHouseholds(currency)
 				.get(0);
@@ -162,7 +162,7 @@ public class CobbDouglasProductionFunctionTest extends CompEconTestSupport {
 
 	@Test
 	public void testCalculateProductionOutputWithMarketPricesAndCapital() {
-		final Currency currency = Currency.EURO;
+		final Currency currency = Currency.ARITHMODYNAMIC;
 
 		final Household household1_EUR = ApplicationContext.getInstance().getAgentService().findHouseholds(currency)
 				.get(0);

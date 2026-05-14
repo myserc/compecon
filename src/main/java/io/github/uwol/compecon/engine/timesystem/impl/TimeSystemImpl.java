@@ -170,6 +170,15 @@ public class TimeSystemImpl implements TimeSystem {
 		gregorianCalendar.add(GregorianCalendar.HOUR_OF_DAY, 1);
 		ApplicationContext.getInstance().getLog().notifyTimeSystem_nextHour(getCurrentDate());
 
+		// Execute Universal Metronome for Arithmodynamic Minting
+		if (ApplicationContext.getInstance().getBankAccountDAO() != null) {
+			for (io.github.uwol.compecon.economy.sectors.financial.BankAccount acc : ApplicationContext.getInstance().getBankAccountDAO().findAll()) {
+				if (acc instanceof io.github.uwol.compecon.economy.sectors.financial.impl.BankAccountImpl) {
+					((io.github.uwol.compecon.economy.sectors.financial.impl.BankAccountImpl) acc).tickMetronome();
+				}
+			}
+		}
+
 		if (HourType.getHourType(gregorianCalendar.get(GregorianCalendar.HOUR_OF_DAY)) == HourType.HOUR_00) {
 			ApplicationContext.getInstance().getLog().notifyTimeSystem_nextDay(getCurrentDate());
 			dayNumber++;

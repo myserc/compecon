@@ -292,8 +292,7 @@ public class HouseholdImpl extends AgentImpl implements Household {
 			/*
 			 * calculate budget
 			 */
-			final double keyInterestRate = ApplicationContext.getInstance().getAgentService()
-					.findCentralBank(HouseholdImpl.this.primaryCurrency).getEffectiveKeyInterestRate();
+			final double keyInterestRate = 0.0;
 			final double income = HouseholdImpl.this.bankAccountTransactions.getBalance();
 
 			final double budget;

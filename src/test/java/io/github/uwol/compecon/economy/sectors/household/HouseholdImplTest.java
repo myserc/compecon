@@ -52,7 +52,7 @@ public class HouseholdImplTest extends CompEconTestSupport {
 
 	@Test
 	public void testDailyLifeEvent() {
-		final Currency currency = Currency.EURO;
+		final Currency currency = Currency.ARITHMODYNAMIC;
 
 		final Household household1_EUR = ApplicationContext.getInstance().getAgentService().findHouseholds(currency)
 				.get(0);

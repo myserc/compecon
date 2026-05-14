@@ -31,7 +31,6 @@ import io.github.uwol.compecon.economy.sectors.financial.BankAccount;
 import io.github.uwol.compecon.economy.sectors.financial.BankAccount.MoneyType;
 import io.github.uwol.compecon.economy.sectors.financial.BankAccount.TermType;
 import io.github.uwol.compecon.economy.sectors.financial.BankAccountDelegate;
-import io.github.uwol.compecon.economy.sectors.financial.CentralBank;
 import io.github.uwol.compecon.economy.sectors.financial.CreditBank;
 import io.github.uwol.compecon.economy.sectors.financial.Currency;
 import io.github.uwol.compecon.economy.sectors.household.Household;
@@ -164,8 +163,7 @@ public class StateImpl extends AgentImpl implements State {
 		ApplicationContext.getInstance().getTimeSystem().addEventEvery(governmentTransferEvent, -1, MonthType.EVERY,
 				DayType.EVERY, HourType.EVERY);
 
-		final double initialInterestRate = ApplicationContext.getInstance().getAgentService()
-				.findCentralBank(primaryCurrency).getEffectiveKeyInterestRate() + 0.02;
+		final double initialInterestRate = 0.02;
 		pricingBehaviour = ApplicationContext.getInstance().getPricingBehaviourFactory()
 				.newInstancePricingBehaviour(this, FixedRateBond.class, primaryCurrency, initialInterestRate);
 	}
@@ -188,10 +186,7 @@ public class StateImpl extends AgentImpl implements State {
 		assert (buyer == buyerBankAccountDelegate.getBankAccount().getOwner());
 
 		// TODO alternative: price := this.pricingBehaviour.getCurrentPrice();
-		final CentralBank centralBank = ApplicationContext.getInstance().getAgentService()
-				.findCentralBank(primaryCurrency);
-		final double coupon = centralBank.getEffectiveKeyInterestRate()
-				+ ApplicationContext.getInstance().getConfiguration().stateConfig.getBondMargin();
+		final double coupon = 0.0 + ApplicationContext.getInstance().getConfiguration().stateConfig.getBondMargin();
 
 		// coupons have to be payed from a separate bank account, so that bonds
 		// can be re-bought with same face value after bond deconstruction

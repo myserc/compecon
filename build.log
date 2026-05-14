@@ -1,0 +1,20 @@
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ----------------< io.github.uwol:computational-economy >----------------
+[INFO] Building computational-economy 1.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- resources:3.3.1:resources (default-resources) @ computational-economy ---
+[INFO] Copying 4 resources from src/main/resources to target/classes
+[INFO]
+[INFO] --- compiler:3.13.0:compile (default-compile) @ computational-economy ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 215 source files with javac [debug target 17] to target/classes
+[WARNING] system modules path not set in conjunction with -source 17
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  4.550 s
+[INFO] Finished at: 2026-05-14T21:59:29Z
+[INFO] ------------------------------------------------------------------------

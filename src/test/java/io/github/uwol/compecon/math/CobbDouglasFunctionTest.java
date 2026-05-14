@@ -61,7 +61,7 @@ public class CobbDouglasFunctionTest extends CompEconTestSupport {
 		 * prepare market
 		 */
 
-		final Currency currency = Currency.EURO;
+		final Currency currency = Currency.ARITHMODYNAMIC;
 
 		final Household household1_EUR = ApplicationContext.getInstance().getAgentService().findHouseholds(currency)
 				.get(0);
@@ -303,7 +303,7 @@ public class CobbDouglasFunctionTest extends CompEconTestSupport {
 		 * prepare market
 		 */
 
-		final Currency currency = Currency.EURO;
+		final Currency currency = Currency.ARITHMODYNAMIC;
 
 		final Household household1_EUR = ApplicationContext.getInstance().getAgentService().findHouseholds(currency)
 				.get(0);
@@ -378,7 +378,7 @@ public class CobbDouglasFunctionTest extends CompEconTestSupport {
 		 * prepare market
 		 */
 
-		final Currency currency = Currency.EURO;
+		final Currency currency = Currency.ARITHMODYNAMIC;
 
 		final Household household1_EUR = ApplicationContext.getInstance().getAgentService().findHouseholds(currency)
 				.get(0);

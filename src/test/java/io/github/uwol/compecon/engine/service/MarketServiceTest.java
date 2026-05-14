@@ -109,7 +109,7 @@ public class MarketServiceTest extends CompEconTestSupport {
 
 	@Test
 	public void testCalculateMarketPriceFunction() {
-		final Currency currency = Currency.EURO;
+		final Currency currency = Currency.ARITHMODYNAMIC;
 		final GoodType goodType = GoodType.LABOURHOUR;
 
 		final Household household1_EUR = ApplicationContext.getInstance().getAgentService().findHouseholds(currency)
@@ -144,8 +144,8 @@ public class MarketServiceTest extends CompEconTestSupport {
 
 	@Test
 	public void testOfferCurrency() {
-		final Currency currency = Currency.EURO;
-		final Currency commodityCurrency = Currency.USDOLLAR;
+		final Currency currency = Currency.ARITHMODYNAMIC;
+		final Currency commodityCurrency = Currency.ARITHMODYNAMIC;
 
 		final CreditBank creditBank1_EUR = ApplicationContext.getInstance().getAgentService().findCreditBanks(currency)
 				.get(0);
@@ -233,7 +233,7 @@ public class MarketServiceTest extends CompEconTestSupport {
 	@Test
 	public void testOfferGoodType() {
 		// test market for good type
-		final Currency currency = Currency.EURO;
+		final Currency currency = Currency.ARITHMODYNAMIC;
 		final GoodType goodType = GoodType.LABOURHOUR;
 
 		final Household household1_EUR = ApplicationContext.getInstance().getAgentService().findHouseholds(currency)
@@ -347,7 +347,7 @@ public class MarketServiceTest extends CompEconTestSupport {
 
 	@Test
 	public void testOfferProperty() {
-		final Currency currency = Currency.EURO;
+		final Currency currency = Currency.ARITHMODYNAMIC;
 
 		final Household household1_EUR = ApplicationContext.getInstance().getAgentService().findHouseholds(currency)
 				.get(0);
