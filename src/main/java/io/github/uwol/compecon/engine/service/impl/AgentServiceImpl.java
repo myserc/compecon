@@ -22,7 +22,6 @@ package io.github.uwol.compecon.engine.service.impl;
 import java.util.List;
 
 import io.github.uwol.compecon.economy.materia.GoodType;
-import io.github.uwol.compecon.economy.sectors.financial.CentralBank;
 import io.github.uwol.compecon.economy.sectors.financial.CreditBank;
 import io.github.uwol.compecon.economy.sectors.financial.Currency;
 import io.github.uwol.compecon.economy.sectors.household.Household;
@@ -33,15 +32,6 @@ import io.github.uwol.compecon.engine.applicationcontext.ApplicationContext;
 import io.github.uwol.compecon.engine.service.AgentService;
 
 public class AgentServiceImpl implements AgentService {
-
-	@Override
-	public CentralBank findCentralBank(final Currency currency) {
-		final CentralBank centralBank = ApplicationContext.getInstance().getCentralBankDAO().findByCurrency(currency);
-		if (centralBank == null) {
-			return ApplicationContext.getInstance().getCentralBankFactory().newInstanceCentralBank(currency);
-		}
-		return centralBank;
-	}
 
 	@Override
 	public List<CreditBank> findCreditBanks(final Currency currency) {

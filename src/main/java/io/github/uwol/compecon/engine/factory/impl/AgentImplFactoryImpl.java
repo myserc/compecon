@@ -26,10 +26,8 @@ import java.util.Set;
 
 import io.github.uwol.compecon.economy.agent.Agent;
 import io.github.uwol.compecon.economy.materia.GoodType;
-import io.github.uwol.compecon.economy.sectors.financial.CentralBank;
 import io.github.uwol.compecon.economy.sectors.financial.CreditBank;
 import io.github.uwol.compecon.economy.sectors.financial.Currency;
-import io.github.uwol.compecon.economy.sectors.financial.impl.CentralBankImpl;
 import io.github.uwol.compecon.economy.sectors.financial.impl.CreditBankImpl;
 import io.github.uwol.compecon.economy.sectors.household.Household;
 import io.github.uwol.compecon.economy.sectors.household.impl.HouseholdImpl;
@@ -49,7 +47,6 @@ public class AgentImplFactoryImpl implements AgentFactory {
 	public AgentImplFactoryImpl() {
 		agentTypes.add(HouseholdImpl.class);
 		agentTypes.add(CreditBankImpl.class);
-		agentTypes.add(CentralBankImpl.class);
 		agentTypes.add(StateImpl.class);
 		agentTypes.add(FactoryImpl.class);
 		agentTypes.add(TraderImpl.class);
@@ -61,13 +58,6 @@ public class AgentImplFactoryImpl implements AgentFactory {
 			if (ApplicationContext.getInstance().getConfiguration().stateConfig.getNumber(currency) == 1) {
 				// initialize states
 				ApplicationContext.getInstance().getAgentService().findState(currency);
-			}
-		}
-
-		for (final Currency currency : Currency.values()) {
-			if (ApplicationContext.getInstance().getConfiguration().centralBankConfig.getNumber(currency) == 1) {
-				// initialize central banks
-				ApplicationContext.getInstance().getAgentService().findCentralBank(currency);
 			}
 		}
 
@@ -136,10 +126,6 @@ public class AgentImplFactoryImpl implements AgentFactory {
 
 		for (final CreditBank creditBank : ApplicationContext.getInstance().getCreditBankDAO().findAll()) {
 			creditBank.deconstruct();
-		}
-
-		for (final CentralBank centralBank : ApplicationContext.getInstance().getCentralBankDAO().findAll()) {
-			centralBank.deconstruct();
 		}
 
 		for (final State state : ApplicationContext.getInstance().getStateDAO().findAll()) {

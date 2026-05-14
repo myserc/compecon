@@ -53,7 +53,7 @@ public class CreditBankTest extends CompEconTestSupport {
 
 	@Test
 	public void testCreditBankDeconstruction() {
-		final Currency currency = Currency.EURO;
+		final Currency currency = Currency.ARITHMODYNAMIC;
 
 		// init household 1
 		final Household household1_EUR = ApplicationContext.getInstance().getAgentService().findHouseholds(currency)
@@ -109,7 +109,7 @@ public class CreditBankTest extends CompEconTestSupport {
 
 	@Test
 	public void testTransferMoney() {
-		final Currency currency = Currency.EURO;
+		final Currency currency = Currency.ARITHMODYNAMIC;
 
 		final Household household1_EUR = ApplicationContext.getInstance().getAgentService().findHouseholds(currency)
 				.get(0);

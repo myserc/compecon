@@ -26,7 +26,15 @@ import io.github.uwol.compecon.economy.sectors.financial.Currency;
 
 public class BankAccountImpl implements BankAccount {
 
-	protected double balance;
+	protected double balance; // Represents Prime Value (PV)
+
+	protected int primeCounts; // Ordinal position in prime sequence
+
+	protected long cumulativeEntropy; // Net non-linear movement
+
+	protected long vaultBooks = 1; // Starts with 1 active book
+
+	protected int activeBookCounts = 0;
 
 	protected Currency currency;
 
@@ -47,13 +55,58 @@ public class BankAccountImpl implements BankAccount {
 	@Override
 	public void deposit(final double amount) {
 		assert (!Double.isNaN(amount) && !Double.isInfinite(amount) && amount >= 0.0);
-
 		balance = balance + amount;
+
+		// Arithmodynamic Phase Transition
+		int newCounts = io.github.uwol.compecon.economy.arithmodynamics.TopologyEngine.getCountsForPrimeValue((long) balance);
+		int entropyDelta = newCounts - this.primeCounts;
+		this.cumulativeEntropy += entropyDelta;
+		this.primeCounts = newCounts;
+	}
+
+	public void tickMetronome() {
+		// Burn books to perform work
+		if (activeBookCounts == 0 && vaultBooks > 0) {
+			vaultBooks--;
+			activeBookCounts = io.github.uwol.compecon.economy.arithmodynamics.TopologyEngine.TOTAL_BOOK_COUNTS;
+		}
+
+		if (activeBookCounts >= 1) {
+			activeBookCounts--;
+			primeCounts++;
+			balance = io.github.uwol.compecon.economy.arithmodynamics.TopologyEngine.getPrimeValueForCounts(primeCounts);
+		}
+
+		// Phase Transition: Crystallize PV into new Vault Books
+		while (balance >= io.github.uwol.compecon.economy.arithmodynamics.TopologyEngine.MINT_SCARCITY) {
+			vaultBooks++;
+			balance -= io.github.uwol.compecon.economy.arithmodynamics.TopologyEngine.MINT_SCARCITY;
+			primeCounts = io.github.uwol.compecon.economy.arithmodynamics.TopologyEngine.getCountsForPrimeValue((long) balance);
+		}
+	}
+
+	public double getUsableDenominationBalance() {
+		long tempPV = (long) balance;
+		long heurs = tempPV / io.github.uwol.compecon.economy.arithmodynamics.TopologyEngine.HEUR_PV;
+		tempPV %= io.github.uwol.compecon.economy.arithmodynamics.TopologyEngine.HEUR_PV;
+
+		long degrees = tempPV / io.github.uwol.compecon.economy.arithmodynamics.TopologyEngine.DEGREE_PV;
+		tempPV %= io.github.uwol.compecon.economy.arithmodynamics.TopologyEngine.DEGREE_PV;
+
+		long twins = tempPV / io.github.uwol.compecon.economy.arithmodynamics.TopologyEngine.TWIN_PV;
+
+		return (heurs * io.github.uwol.compecon.economy.arithmodynamics.TopologyEngine.HEUR_PV) +
+				(degrees * io.github.uwol.compecon.economy.arithmodynamics.TopologyEngine.DEGREE_PV) +
+				(twins * io.github.uwol.compecon.economy.arithmodynamics.TopologyEngine.TWIN_PV);
 	}
 
 	@Override
 	public double getBalance() {
-		return balance;
+		return getUsableDenominationBalance();
+	}
+
+	public double getRawPrimeValue() {
+		return getUsableDenominationBalance();
 	}
 
 	@Override
@@ -98,6 +151,7 @@ public class BankAccountImpl implements BankAccount {
 
 	public void setBalance(final double balance) {
 		this.balance = balance;
+		this.primeCounts = io.github.uwol.compecon.economy.arithmodynamics.TopologyEngine.getCountsForPrimeValue((long) balance);
 	}
 
 	public void setCurrency(final Currency currency) {
@@ -142,8 +196,13 @@ public class BankAccountImpl implements BankAccount {
 	public void withdraw(final double amount) {
 		assert (!Double.isNaN(amount) && !Double.isInfinite(amount) && amount >= 0.0);
 		assert (amount <= balance || overdraftPossible);
-
 		balance = balance - amount;
+
+		// Arithmodynamic Phase Transition
+		int newCounts = io.github.uwol.compecon.economy.arithmodynamics.TopologyEngine.getCountsForPrimeValue((long) Math.max(0, balance));
+		int entropyDelta = newCounts - this.primeCounts;
+		this.cumulativeEntropy += entropyDelta; // Will be negative entropy loss
+		this.primeCounts = newCounts;
 	}
 
 }

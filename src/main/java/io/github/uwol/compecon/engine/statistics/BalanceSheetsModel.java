@@ -26,7 +26,6 @@ import java.util.Map.Entry;
 import io.github.uwol.compecon.economy.agent.Agent;
 import io.github.uwol.compecon.economy.bookkeeping.impl.BalanceSheetDTO;
 import io.github.uwol.compecon.economy.materia.GoodType;
-import io.github.uwol.compecon.economy.sectors.financial.CentralBank;
 import io.github.uwol.compecon.economy.sectors.financial.CreditBank;
 import io.github.uwol.compecon.economy.sectors.financial.Currency;
 import io.github.uwol.compecon.economy.sectors.household.Household;
@@ -35,8 +34,6 @@ import io.github.uwol.compecon.economy.sectors.state.State;
 import io.github.uwol.compecon.economy.sectors.trading.Trader;
 
 public class BalanceSheetsModel extends NotificationListenerModel {
-
-	protected BalanceSheetDTO centralBankBalanceSheet;
 
 	protected final Map<CreditBank, BalanceSheetDTO> creditBankBalanceSheets = new HashMap<CreditBank, BalanceSheetDTO>();
 
@@ -68,9 +65,6 @@ public class BalanceSheetsModel extends NotificationListenerModel {
 			traderBalanceSheets.put((Trader) agent, balanceSheet);
 		} else if (agent instanceof CreditBank) {
 			creditBankBalanceSheets.put((CreditBank) agent, balanceSheet);
-		} else if (agent instanceof CentralBank) {
-			assert (centralBankBalanceSheet == null);
-			centralBankBalanceSheet = balanceSheet;
 		} else if (agent instanceof State) {
 			assert (stateBalanceSheet == null);
 			stateBalanceSheet = balanceSheet;
@@ -121,7 +115,6 @@ public class BalanceSheetsModel extends NotificationListenerModel {
 
 	public BalanceSheetDTO getCentralBankNationalAccountsBalanceSheet() {
 		final BalanceSheetDTO centralBankNationalAccountsBalanceSheet = new BalanceSheetDTO(referenceCurrency);
-		copyBalanceSheetValues(centralBankBalanceSheet, centralBankNationalAccountsBalanceSheet);
 		return centralBankNationalAccountsBalanceSheet;
 	}
 
@@ -187,7 +180,6 @@ public class BalanceSheetsModel extends NotificationListenerModel {
 		copyBalanceSheetValues(getFactoryNationalAccountsBalanceSheet(), nationalAccountsBalanceSheet);
 		copyBalanceSheetValues(getTraderNationalAccountsBalanceSheet(), nationalAccountsBalanceSheet);
 		copyBalanceSheetValues(getCreditBankNationalAccountsBalanceSheet(), nationalAccountsBalanceSheet);
-		copyBalanceSheetValues(centralBankBalanceSheet, nationalAccountsBalanceSheet);
 		copyBalanceSheetValues(stateBalanceSheet, nationalAccountsBalanceSheet);
 		return nationalAccountsBalanceSheet;
 	}
@@ -198,7 +190,6 @@ public class BalanceSheetsModel extends NotificationListenerModel {
 		nationalAccountsBalanceSheets.put(Factory.class, getFactoryNationalAccountsBalanceSheet());
 		nationalAccountsBalanceSheets.put(Trader.class, getTraderNationalAccountsBalanceSheet());
 		nationalAccountsBalanceSheets.put(CreditBank.class, getCreditBankNationalAccountsBalanceSheet());
-		nationalAccountsBalanceSheets.put(CentralBank.class, getCentralBankNationalAccountsBalanceSheet());
 		nationalAccountsBalanceSheets.put(State.class, getStateNationalAccountsBalanceSheet());
 		return nationalAccountsBalanceSheets;
 	}
@@ -237,7 +228,6 @@ public class BalanceSheetsModel extends NotificationListenerModel {
 
 		traderBalanceSheets.clear();
 		creditBankBalanceSheets.clear();
-		centralBankBalanceSheet = null;
 		stateBalanceSheet = null;
 	}
 }

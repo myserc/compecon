@@ -68,17 +68,17 @@ public class CeterisParibusSimulationImpl {
 		/*
 		 * overwrite default configuration.
 		 */
-		ApplicationContext.getInstance().getConfiguration().householdConfig.number.put(Currency.USDOLLAR, 0);
-		ApplicationContext.getInstance().getConfiguration().householdConfig.number.put(Currency.YEN, 0);
+		ApplicationContext.getInstance().getConfiguration().householdConfig.number.put(Currency.ARITHMODYNAMIC, 0);
+		ApplicationContext.getInstance().getConfiguration().householdConfig.number.put(Currency.ARITHMODYNAMIC, 0);
 
 		for (final GoodType goodType : GoodType.values()) {
-			ApplicationContext.getInstance().getConfiguration().factoryConfig.number.get(Currency.USDOLLAR)
+			ApplicationContext.getInstance().getConfiguration().factoryConfig.number.get(Currency.ARITHMODYNAMIC)
 					.put(goodType, 0);
-			ApplicationContext.getInstance().getConfiguration().factoryConfig.number.get(Currency.YEN).put(goodType, 0);
+			ApplicationContext.getInstance().getConfiguration().factoryConfig.number.get(Currency.ARITHMODYNAMIC).put(goodType, 0);
 		}
 
-		ApplicationContext.getInstance().getConfiguration().traderConfig.number.put(Currency.USDOLLAR, 0);
-		ApplicationContext.getInstance().getConfiguration().traderConfig.number.put(Currency.YEN, 0);
+		ApplicationContext.getInstance().getConfiguration().traderConfig.number.put(Currency.ARITHMODYNAMIC, 0);
+		ApplicationContext.getInstance().getConfiguration().traderConfig.number.put(Currency.ARITHMODYNAMIC, 0);
 
 		/*
 		 * set values for iteration
@@ -108,7 +108,7 @@ public class CeterisParibusSimulationImpl {
 		ApplicationContext.getInstance().getAgentFactory().deconstructAgents();
 
 		final double totalUtility = ApplicationContext.getInstance().getModelRegistry()
-				.getNationalEconomyModel(Currency.EURO).totalUtilityOutputModel.getValue();
+				.getNationalEconomyModel(Currency.ARITHMODYNAMIC).totalUtilityOutputModel.getValue();
 
 		/*
 		 * reset application context

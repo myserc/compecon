@@ -1,0 +1,18 @@
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ----------------< io.github.uwol:computational-economy >----------------
+[INFO] Building computational-economy 1.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- resources:3.3.1:resources (default-resources) @ computational-economy ---
+[INFO] Copying 4 resources from src/main/resources to target/classes
+[INFO]
+[INFO] --- compiler:3.13.0:compile (default-compile) @ computational-economy ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  0.807 s
+[INFO] Finished at: 2026-05-14T15:02:51Z
+[INFO] ------------------------------------------------------------------------

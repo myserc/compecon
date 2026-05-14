@@ -30,7 +30,6 @@ import io.github.uwol.compecon.engine.dao.inmemory.impl.SequenceNumberGeneratorI
 import io.github.uwol.compecon.engine.factory.impl.AgentImplFactoryImpl;
 import io.github.uwol.compecon.engine.factory.impl.BankAccountImplFactoryImpl;
 import io.github.uwol.compecon.engine.factory.impl.BudgetingBehaviourFactoryImpl;
-import io.github.uwol.compecon.engine.factory.impl.CentralBankImplFactoryImpl;
 import io.github.uwol.compecon.engine.factory.impl.CreditBankImplFactoryImpl;
 import io.github.uwol.compecon.engine.factory.impl.FactoryImplFactoryImpl;
 import io.github.uwol.compecon.engine.factory.impl.FixedRateBondImplFactoryImpl;
@@ -66,8 +65,6 @@ public class ApplicationContextFactory {
 		ApplicationContext.getInstance()
 				.setBankAccountDAO(new io.github.uwol.compecon.engine.dao.inmemory.impl.BankAccountDAOImpl());
 		ApplicationContext.getInstance()
-				.setCentralBankDAO(new io.github.uwol.compecon.engine.dao.inmemory.impl.CentralBankDAOImpl());
-		ApplicationContext.getInstance()
 				.setCreditBankDAO(new io.github.uwol.compecon.engine.dao.inmemory.impl.CreditBankDAOImpl());
 		ApplicationContext.getInstance().setGoodTypeOwnershipDAO(
 				new io.github.uwol.compecon.engine.dao.inmemory.impl.GoodTypeOwnershipDAOImpl());
@@ -99,7 +96,6 @@ public class ApplicationContextFactory {
 		ApplicationContext.getInstance().setAgentFactory(new AgentImplFactoryImpl());
 		ApplicationContext.getInstance().setBankAccountFactory(new BankAccountImplFactoryImpl());
 		ApplicationContext.getInstance().setBudgetingBehaviourFactory(new BudgetingBehaviourFactoryImpl());
-		ApplicationContext.getInstance().setCentralBankFactory(new CentralBankImplFactoryImpl());
 		ApplicationContext.getInstance().setCreditBankFactory(new CreditBankImplFactoryImpl());
 		ApplicationContext.getInstance().setFactoryFactory(new FactoryImplFactoryImpl());
 		ApplicationContext.getInstance().setFixedRateBondFactory(new FixedRateBondImplFactoryImpl());

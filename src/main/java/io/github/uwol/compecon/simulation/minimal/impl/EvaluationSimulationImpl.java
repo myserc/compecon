@@ -49,7 +49,7 @@ public class EvaluationSimulationImpl {
 
 	protected static M1CsvWriterImpl registerM1FileWriter(final int scenario, final int iteration) {
 		final PeriodDataAccumulatorTimeSeriesModel m1Model = ApplicationContext.getInstance().getModelRegistry()
-				.getNationalEconomyModel(Currency.EURO).moneySupplyM1Model;
+				.getNationalEconomyModel(Currency.ARITHMODYNAMIC).moneySupplyM1Model;
 		final String csvFileName = String.format("csv/%s_%s_m1.csv", scenario, iteration);
 		final M1CsvWriterImpl m1FileWriter = new M1CsvWriterImpl(csvFileName, m1Model);
 
@@ -61,7 +61,7 @@ public class EvaluationSimulationImpl {
 	protected static OutputCsvWriterImpl registerOutputFileWriter(final int scenario, final int iteration,
 			final GoodType goodType) {
 		final IndustryModel industryModel = ApplicationContext.getInstance().getModelRegistry()
-				.getNationalEconomyModel(Currency.EURO).industryModels.get(goodType);
+				.getNationalEconomyModel(Currency.ARITHMODYNAMIC).industryModels.get(goodType);
 		final String csvFileName = String.format("csv/%s_%s_%s_output.csv", scenario, iteration, goodType);
 		final OutputCsvWriterImpl outputFileWriter = new OutputCsvWriterImpl(csvFileName, industryModel, goodType);
 
@@ -73,7 +73,7 @@ public class EvaluationSimulationImpl {
 	protected static PriceCsvWriterImpl registerPriceFileWriter(final int scenario, final int iteration,
 			final GoodType goodType) {
 		final PricesModel pricesModel = ApplicationContext.getInstance().getModelRegistry()
-				.getNationalEconomyModel(Currency.EURO).pricesModel;
+				.getNationalEconomyModel(Currency.ARITHMODYNAMIC).pricesModel;
 		final String csvFileName = String.format("csv/%s_%s_%s_prices.csv", scenario, iteration, goodType);
 		final PriceCsvWriterImpl priceFileWriter = new PriceCsvWriterImpl(csvFileName, pricesModel, goodType);
 
@@ -85,7 +85,7 @@ public class EvaluationSimulationImpl {
 	protected static SoldCsvWriterImpl registerSoldFileWriter(final int scenario, final int iteration,
 			final GoodType goodType) {
 		final PricingBehaviourModel pricingBehaviourModel = ApplicationContext.getInstance().getModelRegistry()
-				.getNationalEconomyModel(Currency.EURO).getPricingBehaviourModel(goodType);
+				.getNationalEconomyModel(Currency.ARITHMODYNAMIC).getPricingBehaviourModel(goodType);
 		final String csvFileName = String.format("csv/%s_%s_%s_sold.csv", scenario, iteration, goodType);
 		final SoldCsvWriterImpl soldFileWriter = new SoldCsvWriterImpl(csvFileName, pricingBehaviourModel, goodType);
 
@@ -96,7 +96,7 @@ public class EvaluationSimulationImpl {
 
 	protected static UtilityCsvWriterImpl registerUtilityFileWriter(final int scenario, final int iteration) {
 		final UtilityModel utilityModel = ApplicationContext.getInstance().getModelRegistry()
-				.getNationalEconomyModel(Currency.EURO).householdsModel.utilityModel;
+				.getNationalEconomyModel(Currency.ARITHMODYNAMIC).householdsModel.utilityModel;
 		final String csvFileName = String.format("csv/%s_%s_utility.csv", scenario, iteration);
 		final UtilityCsvWriterImpl utilityFileWriter = new UtilityCsvWriterImpl(csvFileName, utilityModel);
 

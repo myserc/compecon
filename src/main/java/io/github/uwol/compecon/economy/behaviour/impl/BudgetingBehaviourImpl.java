@@ -57,8 +57,7 @@ public class BudgetingBehaviourImpl implements BudgetingBehaviour {
 			lastMaxCreditRate = referenceCredit;
 		}
 
-		final double keyInterestRate = ApplicationContext.getInstance().getAgentService().findCentralBank(currency)
-				.getEffectiveKeyInterestRate();
+		final double keyInterestRate = 0.0;
 
 		assert (!Double.isNaN(keyInterestRate));
 

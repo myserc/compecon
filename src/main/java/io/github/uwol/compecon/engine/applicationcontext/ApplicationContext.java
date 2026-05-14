@@ -21,7 +21,6 @@ package io.github.uwol.compecon.engine.applicationcontext;
 
 import io.github.uwol.compecon.economy.materia.InputOutputModel;
 import io.github.uwol.compecon.engine.dao.BankAccountDAO;
-import io.github.uwol.compecon.engine.dao.CentralBankDAO;
 import io.github.uwol.compecon.engine.dao.CreditBankDAO;
 import io.github.uwol.compecon.engine.dao.FactoryDAO;
 import io.github.uwol.compecon.engine.dao.GoodTypeOwnershipDAO;
@@ -34,7 +33,6 @@ import io.github.uwol.compecon.engine.dao.inmemory.impl.SequenceNumberGeneratorI
 import io.github.uwol.compecon.engine.factory.AgentFactory;
 import io.github.uwol.compecon.engine.factory.BankAccountFactory;
 import io.github.uwol.compecon.engine.factory.BudgetingBehaviourFactory;
-import io.github.uwol.compecon.engine.factory.CentralBankFactory;
 import io.github.uwol.compecon.engine.factory.CreditBankFactory;
 import io.github.uwol.compecon.engine.factory.FactoryFactory;
 import io.github.uwol.compecon.engine.factory.FixedRateBondFactory;
@@ -81,10 +79,6 @@ public class ApplicationContext {
 	protected BankAccountFactory bankAccountFactory;
 
 	protected BudgetingBehaviourFactory budgetingBehaviourFactory;
-
-	protected CentralBankDAO centralBankDAO;
-
-	protected CentralBankFactory centralBankFactory;
 
 	protected Configuration configuration;
 
@@ -166,14 +160,6 @@ public class ApplicationContext {
 
 	public BudgetingBehaviourFactory getBudgetingBehaviourFactory() {
 		return budgetingBehaviourFactory;
-	}
-
-	public CentralBankDAO getCentralBankDAO() {
-		return centralBankDAO;
-	}
-
-	public CentralBankFactory getCentralBankFactory() {
-		return centralBankFactory;
 	}
 
 	public Configuration getConfiguration() {
@@ -316,14 +302,6 @@ public class ApplicationContext {
 
 	public void setBudgetingBehaviourFactory(final BudgetingBehaviourFactory budgetingBehaviourFactory) {
 		this.budgetingBehaviourFactory = budgetingBehaviourFactory;
-	}
-
-	public void setCentralBankDAO(final CentralBankDAO centralBankDAO) {
-		this.centralBankDAO = centralBankDAO;
-	}
-
-	public void setCentralBankFactory(final CentralBankFactory centralBankFactory) {
-		this.centralBankFactory = centralBankFactory;
 	}
 
 	public void setConfiguration(final Configuration configuration) {

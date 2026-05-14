@@ -21,9 +21,6 @@ package io.github.uwol.compecon.jmx;
 
 public interface JmxNumberOfAgentsModelMBean {
 
-	public int getNumberOfHouseholdsEuro();
+	public int getNumberOfHouseholdsArithmodynamic();
 
-	public int getNumberOfHouseholdsUsdollar();
-
-	public int getNumberOfHouseholdsYen();
 }

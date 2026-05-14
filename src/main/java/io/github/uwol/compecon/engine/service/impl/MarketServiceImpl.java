@@ -142,6 +142,8 @@ public abstract class MarketServiceImpl implements MarketService {
 			double amountToTake = Math.max(0, Math.min(amountToTakeByMaxAmountRestriction,
 					Math.min(amountToTakeByTotalPriceRestriction, amountToTakeByMaxPricePerUnitRestriction)));
 
+			amountToTake = Math.floor(amountToTake);
+
 			// wholeNumberRestriction
 			if (wholeNumber) {
 				amountToTake = (long) amountToTake;

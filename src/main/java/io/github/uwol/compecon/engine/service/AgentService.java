@@ -22,7 +22,6 @@ package io.github.uwol.compecon.engine.service;
 import java.util.List;
 
 import io.github.uwol.compecon.economy.materia.GoodType;
-import io.github.uwol.compecon.economy.sectors.financial.CentralBank;
 import io.github.uwol.compecon.economy.sectors.financial.CreditBank;
 import io.github.uwol.compecon.economy.sectors.financial.Currency;
 import io.github.uwol.compecon.economy.sectors.household.Household;
@@ -31,8 +30,6 @@ import io.github.uwol.compecon.economy.sectors.state.State;
 import io.github.uwol.compecon.economy.sectors.trading.Trader;
 
 public interface AgentService {
-
-	public CentralBank findCentralBank(final Currency currency);
 
 	public List<CreditBank> findCreditBanks(final Currency currency);
 
