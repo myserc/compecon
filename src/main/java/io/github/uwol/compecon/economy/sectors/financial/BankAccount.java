@@ -49,6 +49,10 @@ public interface BankAccount {
 
 	public TermType getTermType();
 
+	public int getPrimeCounts();
+
+	public long getCumulativeEntropy();
+
 	public void withdraw(final double amount);
 
 }

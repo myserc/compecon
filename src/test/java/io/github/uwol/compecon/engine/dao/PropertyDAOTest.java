@@ -51,7 +51,7 @@ public class PropertyDAOTest extends CompEconTestSupport {
 
 	@Test
 	public void testCreateAndDeletePropertyOwnedAndIssuedBy() {
-		final Currency currency = Currency.EURO;
+		final Currency currency = Currency.ARITHMODYNAMIC;
 
 		// prepare
 		final State state_EUR = ApplicationContext.getInstance().getAgentService().findState(currency);
@@ -104,7 +104,7 @@ public class PropertyDAOTest extends CompEconTestSupport {
 
 	@Test
 	public void testTransferProperty() {
-		final Currency currency = Currency.EURO;
+		final Currency currency = Currency.ARITHMODYNAMIC;
 
 		// prepare
 		final State state_EUR = ApplicationContext.getInstance().getAgentService().findState(currency);

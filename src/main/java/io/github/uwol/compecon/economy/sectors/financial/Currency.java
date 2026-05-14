@@ -20,7 +20,7 @@ along with ComputationalEconomy. If not, see <http://www.gnu.org/licenses/>.
 package io.github.uwol.compecon.economy.sectors.financial;
 
 public enum Currency {
-	EURO("EUR"), USDOLLAR("USD"), YEN("YEN");
+	ARITHMODYNAMIC("ARITH");
 
 	public static String formatMoneySum(final double value) {
 		final double million = 1000000;

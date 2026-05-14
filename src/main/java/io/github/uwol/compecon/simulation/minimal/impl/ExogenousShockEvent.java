@@ -30,7 +30,7 @@ import io.github.uwol.compecon.engine.timesystem.TimeSystemEvent;
 public class ExogenousShockEvent implements TimeSystemEvent {
 
 	protected void contraction() {
-		final List<Factory> factories = ApplicationContext.getInstance().getAgentService().findFactories(Currency.EURO,
+		final List<Factory> factories = ApplicationContext.getInstance().getAgentService().findFactories(Currency.ARITHMODYNAMIC,
 				GoodType.WHEAT);
 
 		for (final Factory factory : factories) {
@@ -40,7 +40,7 @@ public class ExogenousShockEvent implements TimeSystemEvent {
 	}
 
 	protected void growth() {
-		final List<Factory> factories = ApplicationContext.getInstance().getAgentService().findFactories(Currency.EURO,
+		final List<Factory> factories = ApplicationContext.getInstance().getAgentService().findFactories(Currency.ARITHMODYNAMIC,
 				GoodType.WHEAT);
 
 		for (final Factory factory : factories) {

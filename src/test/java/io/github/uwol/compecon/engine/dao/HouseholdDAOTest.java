@@ -47,21 +47,16 @@ public class HouseholdDAOTest extends CompEconTestSupport {
 
 	@Test
 	public void testCreateAndDeleteHouseholds() {
-		ApplicationContext.getInstance().getHouseholdFactory().newInstanceHousehold(Currency.EURO, 0);
-		ApplicationContext.getInstance().getHouseholdFactory().newInstanceHousehold(Currency.EURO, 0);
+		ApplicationContext.getInstance().getHouseholdFactory().newInstanceHousehold(Currency.ARITHMODYNAMIC, 0);
+		ApplicationContext.getInstance().getHouseholdFactory().newInstanceHousehold(Currency.ARITHMODYNAMIC, 0);
 		final Household household = ApplicationContext.getInstance().getHouseholdFactory()
-				.newInstanceHousehold(Currency.EURO, 0);
+				.newInstanceHousehold(Currency.ARITHMODYNAMIC, 0);
 
-		ApplicationContext.getInstance().getHouseholdFactory().newInstanceHousehold(Currency.USDOLLAR, 0);
-		ApplicationContext.getInstance().getHouseholdFactory().newInstanceHousehold(Currency.YEN, 0);
-
-		assertEquals(5, ApplicationContext.getInstance().getHouseholdDAO().findAll().size());
-		assertEquals(3, ApplicationContext.getInstance().getHouseholdDAO().findAllByCurrency(Currency.EURO).size());
-		assertEquals(1, ApplicationContext.getInstance().getHouseholdDAO().findAllByCurrency(Currency.USDOLLAR).size());
-		assertEquals(1, ApplicationContext.getInstance().getHouseholdDAO().findAllByCurrency(Currency.YEN).size());
+		assertEquals(3, ApplicationContext.getInstance().getHouseholdDAO().findAll().size());
+		assertEquals(3, ApplicationContext.getInstance().getHouseholdDAO().findAllByCurrency(Currency.ARITHMODYNAMIC).size());
 
 		household.deconstruct();
 
-		assertEquals(2, ApplicationContext.getInstance().getHouseholdDAO().findAllByCurrency(Currency.EURO).size());
+		assertEquals(2, ApplicationContext.getInstance().getHouseholdDAO().findAllByCurrency(Currency.ARITHMODYNAMIC).size());
 	}
 }

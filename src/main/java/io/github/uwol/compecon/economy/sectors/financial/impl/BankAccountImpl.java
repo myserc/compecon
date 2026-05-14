@@ -26,8 +26,9 @@ import io.github.uwol.compecon.economy.sectors.financial.Currency;
 
 public class BankAccountImpl implements BankAccount {
 
-	protected double balance;
-
+	protected double balance; // Represents Prime Value (PV)
+	protected int primeCounts; // Ordinal position in prime sequence
+	protected long cumulativeEntropy; // Net non-linear movement
 	protected Currency currency;
 
 	protected int id;
@@ -47,8 +48,13 @@ public class BankAccountImpl implements BankAccount {
 	@Override
 	public void deposit(final double amount) {
 		assert (!Double.isNaN(amount) && !Double.isInfinite(amount) && amount >= 0.0);
-
 		balance = balance + amount;
+
+		// Arithmodynamic Phase Transition
+		int newCounts = io.github.uwol.compecon.economy.arithmodynamics.TopologyEngine.getCountsForPrimeValue((long) balance);
+		int entropyDelta = newCounts - this.primeCounts;
+		this.cumulativeEntropy += entropyDelta;
+		this.primeCounts = newCounts;
 	}
 
 	@Override
@@ -94,6 +100,16 @@ public class BankAccountImpl implements BankAccount {
 	@Override
 	public TermType getTermType() {
 		return termType;
+	}
+
+	@Override
+	public int getPrimeCounts() {
+		return primeCounts;
+	}
+
+	@Override
+	public long getCumulativeEntropy() {
+		return cumulativeEntropy;
 	}
 
 	public void setBalance(final double balance) {
@@ -142,8 +158,13 @@ public class BankAccountImpl implements BankAccount {
 	public void withdraw(final double amount) {
 		assert (!Double.isNaN(amount) && !Double.isInfinite(amount) && amount >= 0.0);
 		assert (amount <= balance || overdraftPossible);
-
 		balance = balance - amount;
+
+		// Arithmodynamic Phase Transition
+		int newCounts = io.github.uwol.compecon.economy.arithmodynamics.TopologyEngine.getCountsForPrimeValue((long) Math.max(0, balance));
+		int entropyDelta = newCounts - this.primeCounts;
+		this.cumulativeEntropy += entropyDelta; // Will be negative entropy loss
+		this.primeCounts = newCounts;
 	}
 
 }
