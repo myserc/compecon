@@ -79,7 +79,7 @@ public class PropertyServiceTest extends CompEconTestSupport {
 
 		// create bond
 		ApplicationContext.getInstance().getFixedRateBondFactory().newInstanceFixedRateBond(factory1_EUR, factory1_EUR,
-				Currency.EURO, factory1_EUR.getBankAccountTransactionsDelegate(),
+				Currency.ARITHMODYNAMIC, factory1_EUR.getBankAccountTransactionsDelegate(),
 				factory1_EUR.getBankAccountTransactionsDelegate(), 100, 1);
 
 		assertEquals(2, ApplicationContext.getInstance().getPropertyService()
@@ -99,7 +99,7 @@ public class PropertyServiceTest extends CompEconTestSupport {
 
 		// create bond
 		ApplicationContext.getInstance().getFixedRateBondFactory().newInstanceFixedRateBond(factory1_EUR, factory1_EUR,
-				Currency.EURO, factory1_EUR.getBankAccountTransactionsDelegate(),
+				Currency.ARITHMODYNAMIC, factory1_EUR.getBankAccountTransactionsDelegate(),
 				factory1_EUR.getBankAccountTransactionsDelegate(), 100, 1);
 
 		assertEquals(2, ApplicationContext.getInstance().getPropertyService()
@@ -112,7 +112,7 @@ public class PropertyServiceTest extends CompEconTestSupport {
 
 	@Test
 	public void testFindCapital() {
-		final Currency currency = Currency.EURO;
+		final Currency currency = Currency.ARITHMODYNAMIC;
 
 		final Factory factory1_EUR = ApplicationContext.getInstance().getAgentService().findFactories(currency).get(0);
 
@@ -131,7 +131,7 @@ public class PropertyServiceTest extends CompEconTestSupport {
 
 	@Test
 	public void testIncrementAndDecrementGoodType() {
-		final Currency currency = Currency.EURO;
+		final Currency currency = Currency.ARITHMODYNAMIC;
 
 		final Household household1_EUR = ApplicationContext.getInstance().getAgentService().findHouseholds(currency)
 				.get(0);
@@ -173,7 +173,7 @@ public class PropertyServiceTest extends CompEconTestSupport {
 
 	@Test
 	public void testTransferEverythingToRandomAgent() {
-		final Currency currency = Currency.EURO;
+		final Currency currency = Currency.ARITHMODYNAMIC;
 
 		final Household household1_EUR = ApplicationContext.getInstance().getAgentService().findHouseholds(currency)
 				.get(0);
@@ -199,7 +199,7 @@ public class PropertyServiceTest extends CompEconTestSupport {
 
 	@Test
 	public void testTransferGoodTypeAmount() {
-		final Currency currency = Currency.EURO;
+		final Currency currency = Currency.ARITHMODYNAMIC;
 
 		final Household household1_EUR = ApplicationContext.getInstance().getAgentService().findHouseholds(currency)
 				.get(0);
@@ -228,7 +228,7 @@ public class PropertyServiceTest extends CompEconTestSupport {
 
 	@Test
 	public void testTransferProperty() {
-		final Currency currency = Currency.EURO;
+		final Currency currency = Currency.ARITHMODYNAMIC;
 
 		final Household household1_EUR = ApplicationContext.getInstance().getAgentService().findHouseholds(currency)
 				.get(0);

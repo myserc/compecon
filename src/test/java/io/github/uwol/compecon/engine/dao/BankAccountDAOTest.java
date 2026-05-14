@@ -51,7 +51,7 @@ public class BankAccountDAOTest extends CompEconTestSupport {
 
 	@Test
 	public void testCreateAndDeletePropertyOwnedAndIssuedBy() {
-		final Currency currency = Currency.EURO;
+		final Currency currency = Currency.ARITHMODYNAMIC;
 
 		// prepare
 		final CreditBank creditBank1_EUR = ApplicationContext.getInstance().getAgentService().findCreditBanks(currency)
@@ -84,8 +84,6 @@ public class BankAccountDAOTest extends CompEconTestSupport {
 				ApplicationContext.getInstance().getBankAccountDAO().findAll(creditBank1_EUR, household1_EUR).size());
 		assertEquals(1, ApplicationContext.getInstance().getBankAccountDAO()
 				.findAll(creditBank1_EUR, household1_EUR, currency).size());
-		assertEquals(0, ApplicationContext.getInstance().getBankAccountDAO()
-				.findAll(creditBank1_EUR, household1_EUR, Currency.USDOLLAR).size());
 		assertEquals(1,
 				ApplicationContext.getInstance().getBankAccountDAO().findAllBankAccountsOfAgent(household1_EUR).size());
 

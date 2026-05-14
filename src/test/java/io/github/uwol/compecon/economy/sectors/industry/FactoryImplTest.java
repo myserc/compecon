@@ -51,7 +51,7 @@ public class FactoryImplTest extends CompEconTestSupport {
 
 	@Test
 	public void testProductionEvent() {
-		final Currency currency = Currency.EURO;
+		final Currency currency = Currency.ARITHMODYNAMIC;
 
 		final Household household1_EUR = ApplicationContext.getInstance().getAgentService().findHouseholds(currency)
 				.get(0);
@@ -98,7 +98,7 @@ public class FactoryImplTest extends CompEconTestSupport {
 		// deactivate capital depreciation
 		ApplicationContext.getInstance().getConfiguration().factoryConfig.capitalDepreciationRatioPerPeriod = 0.0;
 
-		final Currency currency = Currency.EURO;
+		final Currency currency = Currency.ARITHMODYNAMIC;
 
 		final Household household1_EUR = ApplicationContext.getInstance().getAgentService().findHouseholds(currency)
 				.get(0);
@@ -148,7 +148,7 @@ public class FactoryImplTest extends CompEconTestSupport {
 
 	@Test
 	public void testProductionEventWithInventory() {
-		final Currency currency = Currency.EURO;
+		final Currency currency = Currency.ARITHMODYNAMIC;
 
 		final Household household1_EUR = ApplicationContext.getInstance().getAgentService().findHouseholds(currency)
 				.get(0);
