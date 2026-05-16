@@ -1,3 +1,4 @@
 target/
+*.parquet
 state_dump.parquet
 *.log
