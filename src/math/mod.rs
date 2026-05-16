@@ -22,6 +22,8 @@ pub fn marginal_utility_cobb_douglas(inputs: &[f64], alphas: &[f64], total_facto
     u * alphas[index] / inputs[index]
 }
 
+pub mod optimize;
+
 pub fn optimize_cobb_douglas_fixed_prices(alphas: &[f64], prices: &[f64], budget: f64) -> Vec<f64> {
     let mut bundle = vec![0.0; alphas.len()];
     for i in 0..alphas.len() {

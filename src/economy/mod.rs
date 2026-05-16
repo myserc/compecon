@@ -1,5 +1,8 @@
 use serde::{Serialize, Deserialize};
 
+pub mod finance;
+pub use finance::{AccountType, BankAccount, FixedRateBond, Share};
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[repr(usize)]
 pub enum GoodType {

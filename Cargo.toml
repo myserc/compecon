@@ -10,11 +10,12 @@ serde = { version = "1.0.210", features = ["derive"] }
 serde_json = "1.0.128"
 parquet = "54.0"
 arrow = "54.0"
-hecs = { version = "0.10", features = ["macros"] }
+hecs = { version = "0.10", features = ["macros", "serde"] }
 num-integer = "0.1"
 num-traits = "0.2"
 hashbrown = "0.14"
 indexmap = "2.2"
+ordered-float = "4.2"
 tokio = { version = "1.36", features = ["full"] }
 axum = { version = "0.7", features = ["ws"] }
 futures-util = "0.3"

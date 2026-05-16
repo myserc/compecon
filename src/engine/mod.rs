@@ -1,12 +1,13 @@
 use hecs::World;
 use crate::arithmodynamics::{self, ArithmodynamicNode};
 use crate::economy::{Inventory, NeoclassicalBrain, HouseholdState, FactoryState, GoodType};
-use rayon::prelude::*;
 use crossbeam::channel;
 use serde::{Serialize, Deserialize};
 
 pub mod market;
 pub mod dashboard;
+pub mod systems;
+pub mod statistics;
 
 pub mod intents {
     use hecs::Entity;
@@ -31,7 +32,7 @@ pub mod intents {
     #[derive(Debug, Clone)]
     pub struct ProductionIntent {
         pub factory: Entity,
-        pub inputs: [(GoodType, f64); 2],
+        pub inputs: Vec<(GoodType, f64)>,
         pub output: (GoodType, f64),
     }
 
@@ -51,8 +52,10 @@ pub struct MacroStats {
     pub total_entropy: i64,
     pub agent_count: usize,
     pub m0: u64,
+    pub m1: u64,
     pub total_utility: f64,
     pub gini: f64,
+    pub prices: std::collections::HashMap<String, f64>,
 }
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -103,176 +106,32 @@ impl Simulation {
                 match cmd {
                     dashboard::ControlCommand::EconomicShock(intensity) => {
                         println!("Applying economic shock: intensity={}", intensity);
+                        for (_entity, prod_fn) in self.world.query_mut::<&mut crate::economy::ProductionFunction>() {
+                            prod_fn.coefficient *= 1.0 + intensity;
+                        }
                     }
                     dashboard::ControlCommand::DeficitSpending(amount) => {
                         println!("Injecting deficit spending: amount={}", amount);
+                        // Find the state entity and inject PV
+                        for (_entity, (_s_state, node)) in self.world.query_mut::<(&crate::economy::StateState, &mut ArithmodynamicNode)>() {
+                            node.prime_value += amount;
+                        }
                     }
                 }
             }
         }
 
-        // Phase 1: Evaluation & Intent (Parallel)
+        // Phase 1: Evaluation & Intent
         let (tx_sell, rx_sell) = channel::unbounded::<SellIntent>();
         let (tx_buy, rx_buy) = channel::unbounded::<BuyIntent>();
         let (tx_prod, rx_prod) = channel::unbounded::<ProductionIntent>();
         let (tx_cons, rx_cons) = channel::unbounded::<ConsumptionIntent>();
 
-        let mut factory_evals = Vec::new();
-        for (entity, (node, inventory, factory_state, prod_fn, pricing)) in self.world.query::<(&ArithmodynamicNode, &Inventory, &FactoryState, &crate::economy::ProductionFunction, &crate::economy::PricingStrategy)>().iter() {
-            factory_evals.push((entity, node.clone(), inventory.clone(), factory_state.clone(), prod_fn.clone(), pricing.clone()));
-        }
-
-        let mut household_evals = Vec::new();
-        for (entity, (node, inventory, h_state, util_fn)) in self.world.query::<(&ArithmodynamicNode, &Inventory, &HouseholdState, &crate::economy::UtilityFunction)>().iter() {
-            household_evals.push((entity, node.clone(), inventory.clone(), h_state.clone(), util_fn.clone()));
-        }
-
-        let mut trader_evals = Vec::new();
-        for (entity, (node, inventory, t_state)) in self.world.query::<(&ArithmodynamicNode, &Inventory, &crate::economy::TraderState)>().iter() {
-            trader_evals.push((entity, node.clone(), inventory.clone(), t_state.clone()));
-        }
-
-        let mut state_evals = Vec::new();
-        for (entity, (node, inventory, s_state)) in self.world.query::<(&ArithmodynamicNode, &Inventory, &crate::economy::StateState)>().iter() {
-            state_evals.push((entity, node.clone(), inventory.clone(), s_state.clone()));
-        }
-
-        let mut bank_evals = Vec::new();
-        for (entity, (node, inventory, b_state)) in self.world.query::<(&ArithmodynamicNode, &Inventory, &crate::economy::CreditBankState)>().iter() {
-            bank_evals.push((entity, node.clone(), inventory.clone(), b_state.clone()));
-        }
-
-        let market_ref = &self.market;
-
-        factory_evals.par_iter().for_each_with((tx_sell.clone(), tx_buy.clone(), tx_prod.clone()), |(tx_s, tx_b, tx_p), (entity, _node, inv, f_state, prod_fn, pricing)| {
-            let mut inputs_val = [0.0; crate::economy::GOOD_TYPE_COUNT];
-            for i in 0..crate::economy::GOOD_TYPE_COUNT {
-                inputs_val[i] = inv.goods[i];
-            }
-            let output = crate::math::cobb_douglas(&inputs_val, &prod_fn.exponents, prod_fn.coefficient);
-
-            if output > 0.0 {
-                tx_p.send(ProductionIntent {
-                    factory: *entity,
-                    inputs: [(GoodType::LABOURHOUR, inv.get(GoodType::LABOURHOUR)), (GoodType::MACHINE, 0.0)], // Simplified
-                    output: (f_state.produced_good, output),
-                }).unwrap();
-            }
-
-            tx_s.send(SellIntent {
-                seller: *entity,
-                good: f_state.produced_good,
-                amount: inv.get(f_state.produced_good),
-                price_pv: pricing.current_price as u64,
-            }).unwrap();
-
-            let budget = 100.0;
-            let mut prices = [10.0; crate::economy::GOOD_TYPE_COUNT];
-            for good in GoodType::all() {
-                if let Some(p) = market_ref.get_marginal_price(good) {
-                    prices[good as usize] = p as f64;
-                }
-            }
-            let optimal_inputs = crate::math::optimize_cobb_douglas_fixed_prices(&prod_fn.exponents, &prices, budget);
-            for (i, &amount) in optimal_inputs.iter().enumerate() {
-                if amount > 0.0 {
-                    tx_b.send(BuyIntent {
-                        buyer: *entity,
-                        good: GoodType::all()[i],
-                        max_amount: amount,
-                        max_price_pv: (prices[i] * 1.2) as u64,
-                    }).unwrap();
-                }
-            }
-        });
-
-        household_evals.par_iter().for_each_with((tx_sell.clone(), tx_buy.clone(), tx_cons.clone()), |(tx_s, tx_b, tx_c), (entity, _node, inv, _h_state, util_fn)| {
-            tx_s.send(SellIntent {
-                seller: *entity,
-                good: GoodType::LABOURHOUR,
-                amount: 8.0,
-                price_pv: 10,
-            }).unwrap();
-
-            let mut inputs_val = [0.0; crate::economy::GOOD_TYPE_COUNT];
-            for i in 0..crate::economy::GOOD_TYPE_COUNT {
-                inputs_val[i] = inv.goods[i];
-            }
-            let utility = crate::math::cobb_douglas(&inputs_val, &util_fn.exponents, 1.0);
-            if utility > 0.0 {
-                let mut consumed = Vec::new();
-                for g in GoodType::all() {
-                    if inv.get(g) > 0.0 && g != GoodType::LABOURHOUR {
-                        consumed.push((g, inv.get(g)));
-                    }
-                }
-                tx_c.send(ConsumptionIntent {
-                    household: *entity,
-                    utility,
-                    consumed,
-                }).unwrap();
-            }
-
-            let budget = 50.0;
-            let mut prices = [10.0; crate::economy::GOOD_TYPE_COUNT];
-            for good in GoodType::all() {
-                if let Some(p) = market_ref.get_marginal_price(good) {
-                    prices[good as usize] = p as f64;
-                }
-            }
-            let optimal_bundle = crate::math::optimize_cobb_douglas_fixed_prices(&util_fn.exponents, &prices, budget);
-            for (i, &amount) in optimal_bundle.iter().enumerate() {
-                if amount > 0.0 && GoodType::all()[i] != GoodType::LABOURHOUR {
-                    tx_b.send(BuyIntent {
-                        buyer: *entity,
-                        good: GoodType::all()[i],
-                        max_amount: amount,
-                        max_price_pv: (prices[i] * 1.2) as u64,
-                    }).unwrap();
-                }
-            }
-        });
-
-        trader_evals.par_iter().for_each_with((tx_sell.clone(), tx_buy.clone()), |(tx_s, tx_b), (entity, _node, inv, t_state)| {
-            // Simple arbitrage: buy low, sell high
-            let price = market_ref.get_marginal_price(t_state.traded_good).unwrap_or(10);
-
-            if inv.get(t_state.traded_good) > 0.0 {
-                tx_s.send(SellIntent {
-                    seller: *entity,
-                    good: t_state.traded_good,
-                    amount: inv.get(t_state.traded_good),
-                    price_pv: (price as f64 * 1.1) as u64,
-                }).unwrap();
-            } else {
-                tx_b.send(BuyIntent {
-                    buyer: *entity,
-                    good: t_state.traded_good,
-                    max_amount: 10.0,
-                    max_price_pv: (price as f64 * 0.9) as u64,
-                }).unwrap();
-            }
-        });
-
-        state_evals.par_iter().for_each_with(tx_buy.clone(), |tx_b, (entity, _node, _inv, _s_state)| {
-            // Deficit spending: buy food for the poor
-            tx_b.send(BuyIntent {
-                buyer: *entity,
-                good: GoodType::FOOD,
-                max_amount: 50.0,
-                max_price_pv: 100,
-            }).unwrap();
-        });
-
-        bank_evals.par_iter().for_each_with(tx_buy.clone(), |tx_b, (entity, _node, _inv, _b_state)| {
-            // Banks buy bonds (simplified as buying REALESTATE for now as a placeholder for assets)
-            tx_b.send(BuyIntent {
-                buyer: *entity,
-                good: GoodType::REALESTATE,
-                max_amount: 1.0,
-                max_price_pv: 5000,
-            }).unwrap();
-        });
+        systems::household::household_system(&self.world, &tx_buy, &tx_sell, &tx_cons, &self.market);
+        systems::factory::factory_system(&self.world, &tx_buy, &tx_sell, &tx_prod, &self.market);
+        systems::state::state_system(&self.world, &tx_buy);
+        systems::trader::trader_system(&self.world, &tx_buy, &tx_sell, &self.market);
+        systems::finance::bank_system(&mut self.world);
 
         // Phase 2: Materialization (Sequential)
         for (_entity, (node, _brain)) in self.world.query_mut::<(&mut ArithmodynamicNode, &NeoclassicalBrain)>() {
@@ -302,76 +161,102 @@ impl Simulation {
                 pricing.last_offered += sell.amount;
             }
             let book = &mut self.market.books[sell.good as usize];
-            book.sell_orders.entry(sell.price_pv).or_default().push(crate::engine::market::SellOrder {
+            book.asks.entry(ordered_float::OrderedFloat(sell.price_pv as f64)).or_default().push(crate::engine::market::SellOrder {
                 seller: sell.seller,
                 amount: sell.amount,
-                price_pv: sell.price_pv,
+                price_f64: sell.price_pv as f64,
             });
         }
 
         while let Ok(buy) = rx_buy.try_recv() {
+            let budget_pv = (buy.max_price_pv as f64 * buy.max_amount).round() as u64;
+            let buyer_pv = self.world.get::<&ArithmodynamicNode>(buy.buyer).map(|n| n.prime_value).unwrap_or(0);
+
+            if buyer_pv < budget_pv {
+                continue;
+            }
+
             let book = &mut self.market.books[buy.good as usize];
-            let mut remaining_amount = buy.max_amount;
+            let (amount_acquired, spent_pv, transactions) = book.execute_buy(buy.buyer, budget_pv, buy.max_price_pv as f64, buy.max_amount);
 
-            for (&price, orders) in book.sell_orders.iter_mut() {
-                if price > buy.max_price_pv { break; }
+            if amount_acquired > 0.0 {
+                // To avoid multiple mutable borrows of ArithmodynamicNode at once,
+                // we'll update the buyer and sellers separately.
+                let mut success = false;
+                if let Ok(mut buyer_node) = self.world.get::<&mut ArithmodynamicNode>(buy.buyer) {
+                    if buyer_node.prime_value >= spent_pv {
+                        buyer_node.prime_value -= spent_pv;
+                        success = true;
+                    }
+                }
 
-                for order in orders.iter_mut() {
-                    let fill = f64::min(remaining_amount, order.amount);
-                    if fill > 0.0 {
-                        let pv_total = (fill * price as f64) as u64;
-                        if let Ok(mut buyer_node) = self.world.get::<&mut ArithmodynamicNode>(buy.buyer) {
-                            if buyer_node.prime_value >= pv_total {
-                                buyer_node.prime_value -= pv_total;
-                                if let Ok(mut seller_node) = self.world.get::<&mut ArithmodynamicNode>(order.seller) {
-                                    seller_node.prime_value += pv_total;
+                if success {
+                    let mut distributed_pv = 0;
+                    let tx_len = transactions.len();
+                    for (idx, tx) in transactions.iter().enumerate() {
+                        let tx_pv = if idx == tx_len - 1 {
+                            spent_pv - distributed_pv
+                        } else {
+                            (tx.amount * tx.price).round() as u64
+                        };
+                        distributed_pv += tx_pv;
 
-                                    if let Ok(mut buyer_inv) = self.world.get::<&mut Inventory>(buy.buyer) {
-                                        buyer_inv.add(buy.good, fill);
-                                    }
-                                    if let Ok(mut seller_inv) = self.world.get::<&mut Inventory>(order.seller) {
-                                        seller_inv.add(buy.good, -fill);
-                                    }
-                                    if let Ok(mut seller_pricing) = self.world.get::<&mut crate::economy::PricingStrategy>(order.seller) {
-                                        seller_pricing.last_sold += fill;
-                                    }
-
-                                    remaining_amount -= fill;
-                                    order.amount -= fill;
-                                } else {
-                                    buyer_node.prime_value += pv_total; // Rollback
-                                }
-                            }
+                        if let Ok(mut seller_node) = self.world.get::<&mut ArithmodynamicNode>(tx.seller) {
+                            seller_node.prime_value += tx_pv;
+                        }
+                        if let Ok(mut seller_inv) = self.world.get::<&mut Inventory>(tx.seller) {
+                            seller_inv.add(buy.good, -tx.amount);
+                        }
+                        if let Ok(mut seller_pricing) = self.world.get::<&mut crate::economy::PricingStrategy>(tx.seller) {
+                            seller_pricing.last_sold += tx.amount;
                         }
                     }
-                    if remaining_amount <= 0.0 { break; }
+
+                    if let Ok(mut buyer_inv) = self.world.get::<&mut Inventory>(buy.buyer) {
+                        buyer_inv.add(buy.good, amount_acquired);
+                    }
                 }
-                if remaining_amount <= 0.0 { break; }
             }
-            for (_, orders) in book.sell_orders.iter_mut() {
-                orders.retain(|o| o.amount > 0.0);
-            }
-            book.sell_orders.retain(|_, v| !v.is_empty());
         }
 
         let mut total_utility = 0.0;
         while let Ok(prod) = rx_prod.try_recv() {
             if let Ok(mut inv) = self.world.get::<&mut Inventory>(prod.factory) {
-                for (good, amount) in prod.inputs {
-                    inv.add(good, -amount);
+                let mut can_afford_inputs = true;
+                for (good, amount) in &prod.inputs {
+                    if inv.get(*good) < *amount {
+                        can_afford_inputs = false;
+                        break;
+                    }
                 }
-                inv.add(prod.output.0, prod.output.1);
+
+                if can_afford_inputs {
+                    for (good, amount) in prod.inputs {
+                        inv.add(good, -amount);
+                    }
+                    inv.add(prod.output.0, prod.output.1);
+                }
             }
         }
 
         while let Ok(cons) = rx_cons.try_recv() {
             if let Ok(mut inv) = self.world.get::<&mut Inventory>(cons.household) {
-                for (good, amount) in cons.consumed {
-                    inv.add(good, -amount);
+                let mut can_afford_consumed = true;
+                for (good, amount) in &cons.consumed {
+                    if inv.get(*good) < *amount {
+                        can_afford_consumed = false;
+                        break;
+                    }
                 }
-                total_utility += cons.utility;
-                if let Ok(mut h_state) = self.world.get::<&mut HouseholdState>(cons.household) {
-                    h_state.ticks_since_utility_met = 0;
+
+                if can_afford_consumed {
+                    for (good, amount) in cons.consumed {
+                        inv.add(good, -amount);
+                    }
+                    total_utility += cons.utility;
+                    if let Ok(mut h_state) = self.world.get::<&mut HouseholdState>(cons.household) {
+                        h_state.ticks_since_utility_met = 0;
+                    }
                 }
             }
         }
@@ -379,7 +264,6 @@ impl Simulation {
         // Phase 3: Macro Reduction & Demographics
         let mut to_despawn = Vec::new();
         let mut to_spawn = Vec::new();
-        let mut current_stats = MacroStats::default();
 
         for (entity, (h_state, node)) in self.world.query_mut::<(&mut HouseholdState, &ArithmodynamicNode)>() {
             h_state.ticks_since_utility_met += 1;
@@ -392,32 +276,25 @@ impl Simulation {
             }
         }
 
-        let mut pvs = Vec::new();
         for (_entity, pricing) in self.world.query_mut::<&mut crate::economy::PricingStrategy>() {
             pricing.adapt_price();
         }
 
-        for (_, (node, _inv)) in self.world.query::<(&ArithmodynamicNode, &Inventory)>().iter() {
-            current_stats.total_pv += node.prime_value;
-            current_stats.total_entropy += node.entropy_delta;
-            current_stats.agent_count += 1;
-            current_stats.m0 += node.prime_value;
-            pvs.push(node.prime_value as f64);
+        let detailed_stats = statistics::calculate_statistics(&self.world, &self.market);
+
+        let mut current_stats = MacroStats::default();
+        current_stats.m0 = detailed_stats.m0;
+        current_stats.m1 = detailed_stats.m1;
+        current_stats.gini = detailed_stats.gini;
+        current_stats.total_utility = total_utility;
+        current_stats.agent_count = self.world.len() as usize;
+
+        for g in GoodType::all() {
+            let name = format!("{:?}", g);
+            let price = self.market.get_marginal_price(g).unwrap_or(0.0);
+            current_stats.prices.insert(name, price);
         }
 
-        if !pvs.is_empty() {
-            pvs.sort_by(|a, b| a.partial_cmp(b).unwrap());
-            let n = pvs.len() as f64;
-            let sum_pvs: f64 = pvs.iter().sum();
-            if sum_pvs > 0.0 {
-                let mut sum_diff = 0.0;
-                for (i, pv) in pvs.iter().enumerate() {
-                    sum_diff += (i as f64 + 1.0) * pv;
-                }
-                current_stats.gini = (2.0 * sum_diff) / (n * sum_pvs) - (n + 1.0) / n;
-            }
-        }
-        current_stats.total_utility = total_utility;
         self.stats = current_stats;
 
         for entity in to_despawn {

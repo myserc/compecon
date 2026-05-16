@@ -23,6 +23,7 @@ pub async fn start_dashboard(state: Arc<DashboardState>) {
     let app = Router::new()
         .route("/ws", get(ws_handler))
         .route("/api/control/shock", post(shock_handler))
+        .route("/api/control/deficit_spending", post(deficit_spending_handler))
         .with_state(state);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
@@ -42,6 +43,15 @@ async fn shock_handler(
 ) -> impl IntoResponse {
     let intensity = payload["intensity"].as_f64().unwrap_or(0.0);
     state.control_tx.send(ControlCommand::EconomicShock(intensity)).unwrap();
+    axum::http::StatusCode::OK
+}
+
+async fn deficit_spending_handler(
+    state: axum::extract::State<Arc<DashboardState>>,
+    Json(payload): Json<serde_json::Value>,
+) -> impl IntoResponse {
+    let amount = payload["amount"].as_u64().unwrap_or(0);
+    state.control_tx.send(ControlCommand::DeficitSpending(amount)).unwrap();
     axum::http::StatusCode::OK
 }
 
