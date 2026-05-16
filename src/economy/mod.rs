@@ -1,6 +1,7 @@
 use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[repr(usize)]
 pub enum GoodType {
     CLOTHING = 0,
     COAL = 1,
@@ -60,6 +61,9 @@ impl Inventory {
 pub enum BrainType {
     Household,
     Factory,
+    Trader,
+    State,
+    CreditBank,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -96,6 +100,41 @@ impl PricingStrategy {
             history_sold: [0.0; 3],
         }
     }
+
+    pub fn adapt_price(&mut self) {
+        // Simple state machine:
+        // Sold everything -> Raise price
+        // Sold nothing -> Lower price
+        if self.last_offered > 0.0 {
+            if self.last_sold >= self.last_offered {
+                self.current_price *= 1.0 + self.price_change_increment;
+            } else if self.last_sold == 0.0 {
+                self.current_price /= 1.0 + self.price_change_increment;
+            }
+        }
+
+        // Ensure price doesn't hit zero
+        if self.current_price < 0.01 {
+            self.current_price = 0.01;
+        }
+
+        // Shift history
+        self.history_prices[2] = self.history_prices[1];
+        self.history_prices[1] = self.history_prices[0];
+        self.history_prices[0] = self.current_price;
+
+        self.history_offered[2] = self.history_offered[1];
+        self.history_offered[1] = self.history_offered[0];
+        self.history_offered[0] = self.last_offered;
+
+        self.history_sold[2] = self.history_sold[1];
+        self.history_sold[1] = self.history_sold[0];
+        self.history_sold[0] = self.last_sold;
+
+        // Reset for next tick
+        self.last_offered = 0.0;
+        self.last_sold = 0.0;
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -112,4 +151,20 @@ pub struct HouseholdState {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FactoryState {
     pub produced_good: GoodType,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TraderState {
+    pub traded_good: GoodType,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StateState {
+    pub tax_rate: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreditBankState {
+    pub interest_rate: f64,
+    pub reserves_pv: u64,
 }

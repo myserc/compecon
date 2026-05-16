@@ -52,6 +52,7 @@ pub struct MacroStats {
     pub agent_count: usize,
     pub m0: u64,
     pub total_utility: f64,
+    pub gini: f64,
 }
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -80,6 +81,7 @@ pub struct Simulation {
     pub time: TimeSystem,
     pub market: market::Market,
     pub stats: MacroStats,
+    pub control_rx: Option<crossbeam::channel::Receiver<dashboard::ControlCommand>>,
 }
 
 impl Simulation {
@@ -89,12 +91,25 @@ impl Simulation {
             time: TimeSystem::default(),
             market: market::Market::new(),
             stats: MacroStats::default(),
+            control_rx: None,
         }
     }
 
     pub fn tick(&mut self) {
         self.time.advance();
-        self.market.clear();
+
+        if let Some(rx) = &self.control_rx {
+            while let Ok(cmd) = rx.try_recv() {
+                match cmd {
+                    dashboard::ControlCommand::EconomicShock(intensity) => {
+                        println!("Applying economic shock: intensity={}", intensity);
+                    }
+                    dashboard::ControlCommand::DeficitSpending(amount) => {
+                        println!("Injecting deficit spending: amount={}", amount);
+                    }
+                }
+            }
+        }
 
         // Phase 1: Evaluation & Intent (Parallel)
         let (tx_sell, rx_sell) = channel::unbounded::<SellIntent>();
@@ -110,6 +125,21 @@ impl Simulation {
         let mut household_evals = Vec::new();
         for (entity, (node, inventory, h_state, util_fn)) in self.world.query::<(&ArithmodynamicNode, &Inventory, &HouseholdState, &crate::economy::UtilityFunction)>().iter() {
             household_evals.push((entity, node.clone(), inventory.clone(), h_state.clone(), util_fn.clone()));
+        }
+
+        let mut trader_evals = Vec::new();
+        for (entity, (node, inventory, t_state)) in self.world.query::<(&ArithmodynamicNode, &Inventory, &crate::economy::TraderState)>().iter() {
+            trader_evals.push((entity, node.clone(), inventory.clone(), t_state.clone()));
+        }
+
+        let mut state_evals = Vec::new();
+        for (entity, (node, inventory, s_state)) in self.world.query::<(&ArithmodynamicNode, &Inventory, &crate::economy::StateState)>().iter() {
+            state_evals.push((entity, node.clone(), inventory.clone(), s_state.clone()));
+        }
+
+        let mut bank_evals = Vec::new();
+        for (entity, (node, inventory, b_state)) in self.world.query::<(&ArithmodynamicNode, &Inventory, &crate::economy::CreditBankState)>().iter() {
+            bank_evals.push((entity, node.clone(), inventory.clone(), b_state.clone()));
         }
 
         let market_ref = &self.market;
@@ -203,6 +233,47 @@ impl Simulation {
             }
         });
 
+        trader_evals.par_iter().for_each_with((tx_sell.clone(), tx_buy.clone()), |(tx_s, tx_b), (entity, _node, inv, t_state)| {
+            // Simple arbitrage: buy low, sell high
+            let price = market_ref.get_marginal_price(t_state.traded_good).unwrap_or(10);
+
+            if inv.get(t_state.traded_good) > 0.0 {
+                tx_s.send(SellIntent {
+                    seller: *entity,
+                    good: t_state.traded_good,
+                    amount: inv.get(t_state.traded_good),
+                    price_pv: (price as f64 * 1.1) as u64,
+                }).unwrap();
+            } else {
+                tx_b.send(BuyIntent {
+                    buyer: *entity,
+                    good: t_state.traded_good,
+                    max_amount: 10.0,
+                    max_price_pv: (price as f64 * 0.9) as u64,
+                }).unwrap();
+            }
+        });
+
+        state_evals.par_iter().for_each_with(tx_buy.clone(), |tx_b, (entity, _node, _inv, _s_state)| {
+            // Deficit spending: buy food for the poor
+            tx_b.send(BuyIntent {
+                buyer: *entity,
+                good: GoodType::FOOD,
+                max_amount: 50.0,
+                max_price_pv: 100,
+            }).unwrap();
+        });
+
+        bank_evals.par_iter().for_each_with(tx_buy.clone(), |tx_b, (entity, _node, _inv, _b_state)| {
+            // Banks buy bonds (simplified as buying REALESTATE for now as a placeholder for assets)
+            tx_b.send(BuyIntent {
+                buyer: *entity,
+                good: GoodType::REALESTATE,
+                max_amount: 1.0,
+                max_price_pv: 5000,
+            }).unwrap();
+        });
+
         // Phase 2: Materialization (Sequential)
         for (_entity, (node, _brain)) in self.world.query_mut::<(&mut ArithmodynamicNode, &NeoclassicalBrain)>() {
             if node.active_book_counts == 0 && node.vault_books > 0 {
@@ -227,6 +298,9 @@ impl Simulation {
         }
 
         while let Ok(sell) = rx_sell.try_recv() {
+            if let Ok(mut pricing) = self.world.get::<&mut crate::economy::PricingStrategy>(sell.seller) {
+                pricing.last_offered += sell.amount;
+            }
             let book = &mut self.market.books[sell.good as usize];
             book.sell_orders.entry(sell.price_pv).or_default().push(crate::engine::market::SellOrder {
                 seller: sell.seller,
@@ -257,6 +331,9 @@ impl Simulation {
                                     }
                                     if let Ok(mut seller_inv) = self.world.get::<&mut Inventory>(order.seller) {
                                         seller_inv.add(buy.good, -fill);
+                                    }
+                                    if let Ok(mut seller_pricing) = self.world.get::<&mut crate::economy::PricingStrategy>(order.seller) {
+                                        seller_pricing.last_sold += fill;
                                     }
 
                                     remaining_amount -= fill;
@@ -315,11 +392,30 @@ impl Simulation {
             }
         }
 
+        let mut pvs = Vec::new();
+        for (_entity, pricing) in self.world.query_mut::<&mut crate::economy::PricingStrategy>() {
+            pricing.adapt_price();
+        }
+
         for (_, (node, _inv)) in self.world.query::<(&ArithmodynamicNode, &Inventory)>().iter() {
             current_stats.total_pv += node.prime_value;
             current_stats.total_entropy += node.entropy_delta;
             current_stats.agent_count += 1;
             current_stats.m0 += node.prime_value;
+            pvs.push(node.prime_value as f64);
+        }
+
+        if !pvs.is_empty() {
+            pvs.sort_by(|a, b| a.partial_cmp(b).unwrap());
+            let n = pvs.len() as f64;
+            let sum_pvs: f64 = pvs.iter().sum();
+            if sum_pvs > 0.0 {
+                let mut sum_diff = 0.0;
+                for (i, pv) in pvs.iter().enumerate() {
+                    sum_diff += (i as f64 + 1.0) * pv;
+                }
+                current_stats.gini = (2.0 * sum_diff) / (n * sum_pvs) - (n + 1.0) / n;
+            }
         }
         current_stats.total_utility = total_utility;
         self.stats = current_stats;
@@ -330,6 +426,8 @@ impl Simulation {
         for _ in to_spawn {
             self.spawn_household(500);
         }
+
+        self.market.clear();
     }
 
     pub fn spawn_household(&mut self, initial_pv: u64) {
@@ -368,6 +466,42 @@ impl Simulation {
             },
             crate::economy::PricingStrategy::new(10.0),
             FactoryState { produced_good },
+        ));
+    }
+
+    pub fn spawn_trader(&mut self, initial_pv: u64, traded_good: crate::economy::GoodType) {
+        self.world.spawn((
+            ArithmodynamicNode::new(initial_pv),
+            Inventory::new(),
+            NeoclassicalBrain {
+                brain_type: crate::economy::BrainType::Trader,
+            },
+            crate::economy::TraderState { traded_good },
+        ));
+    }
+
+    pub fn spawn_state(&mut self, initial_pv: u64) {
+        self.world.spawn((
+            ArithmodynamicNode::new(initial_pv),
+            Inventory::new(),
+            NeoclassicalBrain {
+                brain_type: crate::economy::BrainType::State,
+            },
+            crate::economy::StateState { tax_rate: 0.2 },
+        ));
+    }
+
+    pub fn spawn_bank(&mut self, initial_pv: u64) {
+        self.world.spawn((
+            ArithmodynamicNode::new(initial_pv),
+            Inventory::new(),
+            NeoclassicalBrain {
+                brain_type: crate::economy::BrainType::CreditBank,
+            },
+            crate::economy::CreditBankState {
+                interest_rate: 0.05,
+                reserves_pv: initial_pv,
+            },
         ));
     }
 }

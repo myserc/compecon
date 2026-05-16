@@ -34,11 +34,13 @@ pub fn dump_stats_to_parquet(stats_history: &[MacroStats], path: &str) -> Result
     let m0 = UInt64Array::from(stats_history.iter().map(|s| s.m0).collect::<Vec<_>>());
     let total_utility = Float64Array::from(stats_history.iter().map(|s| s.total_utility).collect::<Vec<_>>());
     let agent_count = UInt64Array::from(stats_history.iter().map(|s| s.agent_count as u64).collect::<Vec<_>>());
+    let gini = Float64Array::from(stats_history.iter().map(|s| s.gini).collect::<Vec<_>>());
 
     let batch = RecordBatch::try_from_iter(vec![
         ("m0", Arc::new(m0) as Arc<dyn arrow::array::Array>),
         ("total_utility", Arc::new(total_utility) as Arc<dyn arrow::array::Array>),
         ("agent_count", Arc::new(agent_count) as Arc<dyn arrow::array::Array>),
+        ("gini", Arc::new(gini) as Arc<dyn arrow::array::Array>),
     ])?;
 
     let file = File::create(path)?;

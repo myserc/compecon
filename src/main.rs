@@ -15,8 +15,12 @@ async fn main() {
 
     let mut sim = Simulation::new();
 
+    let (control_tx, control_rx) = crossbeam::channel::unbounded();
+    sim.control_rx = Some(control_rx);
+
     let dashboard_state = std::sync::Arc::new(engine::dashboard::DashboardState {
         last_stats: std::sync::Mutex::new(sim.stats.clone()),
+        control_tx,
     });
 
     let dashboard_state_clone = dashboard_state.clone();
