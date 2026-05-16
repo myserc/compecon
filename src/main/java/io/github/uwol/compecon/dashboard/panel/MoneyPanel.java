@@ -42,7 +42,37 @@ public class MoneyPanel extends AbstractChartsPanel implements ModelListener {
 		this.add(createMoneySupplyPanel());
 		this.add(createMoneyCirculationPanel());
 		this.add(createMoneyVelocityPanel());
+		this.add(createTransactionProbabilityPanel());
+		this.add(createNetEntropyPanel());
 		this.add(createCreditUtilizationRatePanel());
+	}
+
+	protected ChartPanel createNetEntropyPanel() {
+		final TimeSeriesCollection timeSeriesCollection = new TimeSeriesCollection();
+
+		for (final Currency currency : Currency.values()) {
+			timeSeriesCollection.addSeries(ApplicationContext.getInstance().getModelRegistry()
+					.getNationalEconomyModel(currency).netEntropyModel.getTimeSeries());
+		}
+
+		final JFreeChart chart = ChartFactory.createTimeSeriesChart("Total Net Entropy", "Date", "Entropy",
+				timeSeriesCollection, true, true, false);
+		configureChart(chart);
+		return new ChartPanel(chart);
+	}
+
+	protected ChartPanel createTransactionProbabilityPanel() {
+		final TimeSeriesCollection timeSeriesCollection = new TimeSeriesCollection();
+
+		for (final Currency currency : Currency.values()) {
+			timeSeriesCollection.addSeries(ApplicationContext.getInstance().getModelRegistry()
+					.getNationalEconomyModel(currency).transactionProbabilityModel.getTimeSeries());
+		}
+
+		final JFreeChart chart = ChartFactory.createTimeSeriesChart("Transaction Probability", "Date", "Probability",
+				timeSeriesCollection, true, true, false);
+		configureChart(chart);
+		return new ChartPanel(chart);
 	}
 
 	protected ChartPanel createCreditUtilizationRatePanel() {

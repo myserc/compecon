@@ -31,6 +31,8 @@ public interface BankAccount {
 
 	public void deposit(final double amount);
 
+	public long getCumulativeEntropy();
+
 	public double getBalance();
 
 	public Currency getCurrency();

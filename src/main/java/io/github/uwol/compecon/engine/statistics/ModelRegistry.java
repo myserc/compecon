@@ -342,6 +342,9 @@ public class ModelRegistry {
 		public final PeriodDataAccumulatorTimeSeriesModel moneySupplyM1Model;
 		public final PeriodDataAccumulatorTimeSeriesModel moneySupplyM2Model;
 		public final PeriodDataQuotientTimeSeriesModel moneyVelocityModel;
+		public final PeriodDataAccumulatorTimeSeriesModel transactionCountModel;
+		public final PeriodDataQuotientTimeSeriesModel transactionProbabilityModel;
+		public final PeriodDataAccumulatorTimeSeriesModel netEntropyModel;
 		public final Map<Class<? extends Agent>, PeriodDataAccumulatorTimeSeriesModel> numberOfAgentsModels = new HashMap<Class<? extends Agent>, PeriodDataAccumulatorTimeSeriesModel>();
 		public final PeriodDataAccumulatorTimeSeriesModel priceIndexModel;
 
@@ -400,6 +403,9 @@ public class ModelRegistry {
 			moneyCirculationModel = new PeriodDataAccumulatorTimeSeriesModel(
 					currency.getIso4217Code() + " money circulation");
 			moneyVelocityModel = new PeriodDataQuotientTimeSeriesModel(currency.getIso4217Code() + " money velocity");
+			transactionCountModel = new PeriodDataAccumulatorTimeSeriesModel(currency.getIso4217Code() + " tx count");
+			transactionProbabilityModel = new PeriodDataQuotientTimeSeriesModel(currency.getIso4217Code() + " tx prob.");
+			netEntropyModel = new PeriodDataAccumulatorTimeSeriesModel(currency.getIso4217Code() + " net entropy");
 			priceIndexModel = new PeriodDataAccumulatorTimeSeriesModel(currency.getIso4217Code() + " price index");
 			creditUtilizationRateModel = new PeriodDataQuotientTimeSeriesModel(
 					currency.getIso4217Code() + " credit util. rate");
@@ -421,6 +427,21 @@ public class ModelRegistry {
 		public void nextPeriod() {
 			moneyVelocityModel.add(moneyCirculationModel.getValue(), moneySupplyM1Model.getValue());
 
+			double totalAgents = 0;
+			for (final PeriodDataAccumulatorTimeSeriesModel numberOfAgentsModel : numberOfAgentsModels.values()) {
+				totalAgents += numberOfAgentsModel.getValue();
+			}
+			transactionProbabilityModel.add(transactionCountModel.getValue(), totalAgents * 24.0);
+
+			long totalEntropy = 0;
+			for (final io.github.uwol.compecon.economy.sectors.financial.BankAccount account : ApplicationContext.getInstance()
+					.getBankAccountDAO().findAll()) {
+				if (currency.equals(account.getCurrency())) {
+					totalEntropy += account.getCumulativeEntropy();
+				}
+			}
+			netEntropyModel.add(totalEntropy);
+
 			for (final IndustryModel goodTypeProductionModel : industryModels.values()) {
 				goodTypeProductionModel.nextPeriod();
 			}
@@ -440,6 +461,9 @@ public class ModelRegistry {
 			moneySupplyM2Model.nextPeriod();
 			moneyCirculationModel.nextPeriod();
 			moneyVelocityModel.nextPeriod();
+			transactionCountModel.nextPeriod();
+			transactionProbabilityModel.nextPeriod();
+			netEntropyModel.nextPeriod();
 
 			for (final PeriodDataAccumulatorTimeSeriesModel numberOfAgentsModel : numberOfAgentsModels.values()) {
 				numberOfAgentsModel.nextPeriod();

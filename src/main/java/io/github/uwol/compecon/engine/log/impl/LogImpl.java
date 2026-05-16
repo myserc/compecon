@@ -167,6 +167,8 @@ public class LogImpl implements Log {
 							.bank_onTransfer(from.getOwner().getClass(), to.getOwner().getClass(), currency, value);
 			ApplicationContext.getInstance().getModelRegistry().getNationalEconomyModel(currency).moneyCirculationModel
 					.add(value);
+			ApplicationContext.getInstance().getModelRegistry().getNationalEconomyModel(currency).transactionCountModel
+					.add(1);
 		}
 
 		if (isAgentSelectedByClient(from.getOwner())) {

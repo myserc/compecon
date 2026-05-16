@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-configuration PUBLIC
+      "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+      "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd" >
+<hibernate-configuration>
+	<session-factory>
+	
+		<!-- HSQLDB -->
+		<property name="connection.url">jdbc:hsqldb:mem:compecon</property>
+		<property name="connection.driver_class">org.hsqldb.jdbcDriver</property>
+        <property name="dialect">org.hibernate.dialect.HSQLDialect</property>
+
+		<!-- MySQL -->
+		<!-- <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/compecon</property> -->
+		<!-- <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property> -->
+		<!-- <property name="hibernate.dialect">org.hibernate.dialect.MySQL5InnoDBDialect</property> -->
+		
+		<!-- PostgreSQL -->
+		<!-- <property name="connection.url">jdbc:postgresql://localhost:5432/compecon</property> -->
+		<!-- <property name="connection.driver_class">org.postgresql.Driver</property> -->
+		<!-- <property name="dialect">org.hibernate.dialect.PostgreSQLDialect</property> -->
+		
+		<property name="hibernate.connection.username">sa</property>
+		<property name="hibernate.connection.password"></property>
+		
+		<property name="hibernate.connection.pool_size">1</property>
+		<property name="hibernate.connection.autocommit">true</property>
+		<property name="hibernate.current_session_context_class">thread</property>
+		<property name="hibernate.show_sql">false</property>
+		<property name="hibernate.format_sql">false</property>
+		<property name="hibernate.hbm2ddl.auto">create</property>
+		<property name="hibernate.generate.statistics">false</property>
+		
+		<!-- <property name="hibernate.order_inserts">true</property> -->
+		<!-- <property name="hibernate.order_updates">true</property> -->
+		<!-- <property name="hibernate.use_sql_comments">false</property> -->
+		<!-- <property name="hibernate.jdbc.batch_versioned_data">false</property> -->
+		<!-- <property name="hibernate.jdbc.fetch_size">100</property> -->
+		<!-- <property name="hibernate.jdbc.batch_size">100</property> -->		
+
+		<mapping class="compecon.economy.agent.Agent" />
+		<mapping class="compecon.economy.agent.impl.AgentImpl" />
+		<mapping class="compecon.economy.markets.MarketOrder" />
+		<mapping class="compecon.economy.markets.impl.MarketOrderImpl" />
+		<mapping class="compecon.economy.materia.GoodType" />
+		<mapping class="compecon.economy.property.GoodTypeOwnership" />
+		<mapping class="compecon.economy.property.impl.GoodTypeOwnershipImpl" />
+		<mapping class="compecon.economy.property.Property" />
+		<mapping class="compecon.economy.property.impl.PropertyImpl" />
+		<mapping class="compecon.economy.property.PropertyIssued" />
+		<mapping class="compecon.economy.property.impl.PropertyIssuedImpl" />
+		<mapping class="compecon.economy.sectors.financial.Currency" />
+		<mapping class="compecon.economy.sectors.financial.Bank" />
+		<mapping class="compecon.economy.sectors.financial.impl.BankImpl" />
+		<mapping class="compecon.economy.sectors.financial.BankAccount" />
+		<mapping class="compecon.economy.sectors.financial.impl.BankAccountImpl" />
+		<mapping class="compecon.economy.sectors.financial.CreditBank" />
+		<mapping class="compecon.economy.sectors.financial.impl.CreditBankImpl" />
+		<mapping class="compecon.economy.sectors.financial.CentralBank" />
+		<mapping class="compecon.economy.sectors.financial.impl.CentralBankImpl" />
+		<mapping class="compecon.economy.sectors.household.Household" />
+		<mapping class="compecon.economy.sectors.household.impl.HouseholdImpl" />
+		<mapping class="compecon.economy.sectors.industry.Factory" />
+		<mapping class="compecon.economy.sectors.industry.impl.FactoryImpl" />
+		<mapping class="compecon.economy.sectors.state.State" />
+		<mapping class="compecon.economy.sectors.state.impl.StateImpl" />
+		<mapping class="compecon.economy.sectors.trading.Trader" />
+		<mapping class="compecon.economy.sectors.trading.impl.TraderImpl" />
+		<mapping class="compecon.economy.security.debt.Bond" />
+		<mapping class="compecon.economy.security.debt.impl.BondImpl" />
+		<mapping class="compecon.economy.security.debt.FixedRateBond" />
+		<mapping class="compecon.economy.security.debt.impl.FixedRateBondImpl" />
+		<mapping class="compecon.economy.security.debt.ZeroCouponBond" />
+		<mapping class="compecon.economy.security.debt.impl.ZeroCouponBondImpl" />
+		<mapping class="compecon.economy.security.equity.JointStockCompany" />
+		<mapping class="compecon.economy.security.equity.impl.JointStockCompanyImpl" />
+		<mapping class="compecon.economy.security.equity.Share" />
+		<mapping class="compecon.economy.security.equity.impl.ShareImpl" />
+	</session-factory>
+</hibernate-configuration>
